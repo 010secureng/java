@@ -193,6 +193,12 @@ public class Copy extends Exec {
           throw new IOException("Invalid entry: " + entry.getName());
         }
         File f = new File(destination.toFile(), normalName);
+        // Zip Slip protection: verify that output path is inside destination
+        Path destDirPath = destination.toAbsolutePath().normalize();
+        Path filePath = f.toPath().toAbsolutePath().normalize();
+        if (!filePath.startsWith(destDirPath)) {
+          throw new IOException("Entry is outside of the target dir: " + entry.getName());
+        }
         if (entry.isDirectory()) {
           if (!f.isDirectory() && !f.mkdirs()) {
             throw new IOException("create directory failed: " + f);
